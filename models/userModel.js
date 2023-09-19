@@ -29,8 +29,32 @@ var userSchema = new mongoose.Schema({
     role:{
         type:String,
         default:"user"
+    },
+    isBlocked:{
+        type: Boolean,
+        default: false
+    },
+    refreshToken:{
+        type: String
     }
-});
+
+    ,
+    cart:{
+        type:Array,
+        default:[]
+    },
+    address:[{
+        type:mongoose.Schema.Types.ObjectId ,
+        ref:"Address"
+    }],
+    wisklist:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref: "Product"
+    }],
+    
+},
+{
+    timestamps:true});
 
 //to encrypt password before save
 userSchema.pre("save", async function(next){
