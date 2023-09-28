@@ -17,7 +17,7 @@ const authMiddleware=asyncHandler(async(req,res,next)=>{
                 const user=await User.findById(decoded?.id);
                 req.user=user;
                 next();
-                console.log(decoded);
+                //console.log(decoded);
             }
 
         }catch(err){
@@ -36,6 +36,6 @@ const isAdmin=asyncHandler(async(req,res,next)=>{
     }else{
         next();
     }
-    console.log(req.user);
+    //console.log(req.user);
 });
 module.exports={authMiddleware,isAdmin};
