@@ -21,6 +21,70 @@ const createUser=asyncHandler(async(req,res)=>{
     }
 });
 
+//login admin
+
+
+const loginAdmin = asyncHandler(async(req,res)=>{
+    const {email,password}=req.body;
+    // check user if exist or not
+    const findAdmin=await User.findOne({email:email});
+    if(findAdmin!=='admin'){
+        throw new Error("not authorized");
+    }
+
+    if(findAdmin && (await findAdmin.isPasswordMatched(password))){
+        const refrehToken = await generateRefreshToken(findAdmin?._id);
+        const updateUser= await User.findByIdAndUpdate(findAdmin._id,{refreshToken:refrehToken},{new:true});
+        console.log(updateUser);
+        //from npm i cookie parser
+        res.cookie('refreshToken',refrehToken,{
+            httpOnly: true,
+            maxAge: 72*60*60*1000
+        })
+        res.json({
+            _id:findAdmin?._id,
+            firstname:findAdmin?.firstname,
+            lastname:findAdmin?.lastname,
+            email:findAdmin?.email,
+            mobile:findAdmin?.mobile,
+            token:generateToken(findAdmin?._id)
+        });
+
+    }else{
+        throw new Error("invalid credentials");
+    }
+    console.log(email+password);
+});
+
+
+
+//add to wish list
+
+const addToWishlist=asyncHandler(async(req,res)=>{
+    const {_id}=req.user;
+    const {prodId} = req.body;
+       try{
+           const user=await User.findById(_id);
+           const alreadyadded = user.wishlist.find((id)=>id.toString() ===prodId);
+           console.log(alreadyadded)
+           if(alreadyadded){
+               let user = await User.findByIdAndUpdate(_id,{
+                   $pull:{wishlist: prodId}
+               },{new:true});
+               res.json(user);
+           }else{
+               let user = await User.findByIdAndUpdate(_id,{
+                   $push:{wishlist: prodId}
+               },{new:true});
+               res.json(user);
+           }
+       }
+       catch(err){
+           throw new Error(err);
+       }
+   })
+
+
 //login controller
 
 const loginUserCtrl = asyncHandler(async(req,res)=>{
@@ -255,4 +319,6 @@ module.exports={
     ,updatePassword
     ,forgotPasswordToken
     ,resetPassword
+    ,loginAdmin
+    ,addToWishlist
 }
